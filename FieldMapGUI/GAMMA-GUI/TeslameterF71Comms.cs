@@ -266,28 +266,29 @@ namespace FieldMapGUI
                 Thread.Sleep(50);
                
 
-                double tempVar, tempVarX, tempVarY, tempVarZ;
+                double tempVar, tempVarM, tempVarX, tempVarY, tempVarZ;
                 
                 
                 try
                 {
                    
                     
-                    tempVar = double.Parse(readbacks[4]);
-                    tempVar = double.Parse(readbacks[6]);
-                    tempVar = double.Parse(readbacks[7]);
+                  
 
-                    tempVar = double.Parse(readbacks[0]);
+                    tempVarM = double.Parse(readbacks[0]);
                     tempVarX = double.Parse(readbacks[1]);
                     tempVarY = double.Parse(readbacks[2]);
                     tempVarZ = double.Parse(readbacks[3]);
 
-                    if(Math.Round(tempVar,4) != Math.Round(Math.Sqrt(tempVarX* tempVarX + tempVarY*tempVarY + tempVarZ* tempVarZ),4)) 
+
+                    tempVar = 0;
+
+                    if (Math.Round(tempVarM,4) != Math.Round(Math.Sqrt(tempVarX* tempVarX + tempVarY*tempVarY + tempVarZ* tempVarZ),4)) 
                     { 
                         tempVar = 1; 
                     }
 
-                    tempVar = 0;
+                    
                     if (readbacks.Length != 11)
                     {
                         tempVar = 1;
