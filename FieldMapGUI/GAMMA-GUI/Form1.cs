@@ -1321,7 +1321,7 @@ namespace FieldMapGUI
 
 
             goToXYZ(measMinX, measMinY, measMinZ);
-            startTime = DateTime.UtcNow;
+            startTime = DateTime.Now;
 
             int averageLoops = int.Parse(textBoxAverageMeasure.Text);
             int dwellTime = int.Parse(textBoxDwell.Text);
@@ -1532,7 +1532,7 @@ namespace FieldMapGUI
 
 
 
-                        DateTime nowTime = DateTime.UtcNow;
+                        DateTime nowTime = DateTime.Now;
                         measTime = nowTime;
 
 
@@ -1544,7 +1544,7 @@ namespace FieldMapGUI
                         {
                             double timeRemaining = pointsRemaining * (timeBetweenMeasurements.TotalSeconds / (pointsMeasured));
                             TimeSpan timeSpanRemaining = TimeSpan.FromSeconds(timeRemaining);
-                            timeRemainString = timeSpanRemaining.ToString(@"dd\:hh\:mm\:ss");
+                            timeRemainString = timeSpanRemaining.ToString(@"dd\:HH\:mm\:ss");
                         }
                         pointsMeasured++;
                         percentageComplete = 100 * pointsMeasured / ((measurePointsX + 1) * (measurePointsY + 1) * (measurePointsZ + 1));
@@ -1602,7 +1602,7 @@ namespace FieldMapGUI
 
 
             goToXYZ(setX, setY, setZ);
-            startTime = DateTime.UtcNow;
+            startTime = DateTime.Now;
             DateTime endTime;
 
             endTime = startTime.AddHours(double.Parse(textBoxTimeMeasHour.Text));
@@ -1616,7 +1616,7 @@ namespace FieldMapGUI
 
             //chyange to while loop - while time elapsed less than timeend - timestart
 
-            while(DateTime.UtcNow< endTime)
+            while(DateTime.Now< endTime)
             {
    
                         
@@ -1729,7 +1729,7 @@ namespace FieldMapGUI
 
 
 
-                DateTime nowTime = DateTime.UtcNow;
+                DateTime nowTime = DateTime.Now;
                 measTime = nowTime;
 
 
@@ -1744,7 +1744,7 @@ namespace FieldMapGUI
                             timeRemaining = endTime- nowTime;
                             timeTotal = endTime- startTime;
                             timeElapsed = nowTime - startTime;
-                            timeRemainString = timeRemaining.ToString(@"dd\:hh\:mm\:ss");
+                            timeRemainString = timeRemaining.ToString();
                             percentageComplete = Math.Round(timeElapsed.TotalSeconds / timeTotal.TotalSeconds,3);
                 }
                         pointsMeasured++;
@@ -1863,10 +1863,10 @@ namespace FieldMapGUI
                 labelZpos.Text =  (50-kCubeZ.Position).ToString("0.00");
                 
                 
-                if (updateChart&&newData) {
-
+                if (updateChart&&newData)
+                    {
                     string dateString = measTime .ToString(@"yyyy\-MM\-dd");
-                    string timeString = measTime .ToString(@"hh\:mm\:ss\.fff");
+                    string timeString = measTime .ToString(@"HH\:mm\:ss\.fff");
 
                     if(pointsMeasured> dataGridView1.Rows.Count)
                     {
