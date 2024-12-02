@@ -11,12 +11,12 @@
       "RelativeMoniker": "D:0:0:{C63425A3-2F96-475E-BA53-85BF5C1FFDFE}|GAMMA-GUI\\FieldMapGUI.csproj|solutionrelative:gamma-gui\\teslameterf71comms.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C63425A3-2F96-475E-BA53-85BF5C1FFDFE}|GAMMA-GUI\\FieldMapGUI.csproj|C:\\Users\\Gamma_MRI\\Documents\\GitHub\\FieldMapGUI\\FieldMapGUI\\gamma-gui\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{C63425A3-2F96-475E-BA53-85BF5C1FFDFE}|GAMMA-GUI\\FieldMapGUI.csproj|solutionrelative:gamma-gui\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{C63425A3-2F96-475E-BA53-85BF5C1FFDFE}|GAMMA-GUI\\FieldMapGUI.csproj|C:\\Users\\Gamma_MRI\\Documents\\GitHub\\FieldMapGUI\\FieldMapGUI\\gamma-gui\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C63425A3-2F96-475E-BA53-85BF5C1FFDFE}|GAMMA-GUI\\FieldMapGUI.csproj|solutionrelative:gamma-gui\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C63425A3-2F96-475E-BA53-85BF5C1FFDFE}|GAMMA-GUI\\FieldMapGUI.csproj|C:\\Users\\Gamma_MRI\\Documents\\GitHub\\FieldMapGUI\\FieldMapGUI\\gamma-gui\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{C63425A3-2F96-475E-BA53-85BF5C1FFDFE}|GAMMA-GUI\\FieldMapGUI.csproj|solutionrelative:gamma-gui\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,15 +34,16 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "Form1.Designer.cs",
               "DocumentMoniker": "C:\\Users\\Gamma_MRI\\Documents\\GitHub\\FieldMapGUI\\FieldMapGUI\\GAMMA-GUI\\Form1.Designer.cs",
               "RelativeDocumentMoniker": "GAMMA-GUI\\Form1.Designer.cs",
               "ToolTip": "C:\\Users\\Gamma_MRI\\Documents\\GitHub\\FieldMapGUI\\FieldMapGUI\\GAMMA-GUI\\Form1.Designer.cs",
               "RelativeToolTip": "GAMMA-GUI\\Form1.Designer.cs",
-              "ViewState": "AQIAACMDAAAAAAAAAIAwwEEDAABJAAAA",
+              "ViewState": "AQIAAGwAAAAAAAAAAIAwwIQAAABIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-25T08:58:56.522Z"
+              "WhenOpened": "2024-10-25T08:58:56.522Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -52,9 +53,10 @@
               "RelativeDocumentMoniker": "GAMMA-GUI\\TeslameterF71Comms.cs",
               "ToolTip": "C:\\Users\\Gamma_MRI\\Documents\\GitHub\\FieldMapGUI\\FieldMapGUI\\GAMMA-GUI\\TeslameterF71Comms.cs",
               "RelativeToolTip": "GAMMA-GUI\\TeslameterF71Comms.cs",
-              "ViewState": "AQIAAB4BAAAAAAAAAAAhwDgBAABDAAAA",
+              "ViewState": "AQIAAJ4AAAAAAAAAAAAhwLQAAAAJAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-04T12:46:31.01Z"
+              "WhenOpened": "2024-10-04T12:46:31.01Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -64,21 +66,22 @@
               "RelativeDocumentMoniker": "GAMMA-GUI\\Form1.cs",
               "ToolTip": "C:\\Users\\Gamma_MRI\\Documents\\GitHub\\FieldMapGUI\\FieldMapGUI\\GAMMA-GUI\\Form1.cs",
               "RelativeToolTip": "GAMMA-GUI\\Form1.cs",
-              "ViewState": "AQIAALMDAAAAAAAAAAAgwNEDAAA2AAAA",
+              "ViewState": "AQIAAFUAAAAAAAAAAAAAAGUAAAAeAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-04T12:43:29.485Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Form1.cs [Design]",
               "DocumentMoniker": "C:\\Users\\Gamma_MRI\\Documents\\GitHub\\FieldMapGUI\\FieldMapGUI\\GAMMA-GUI\\Form1.cs",
               "RelativeDocumentMoniker": "GAMMA-GUI\\Form1.cs",
-              "ToolTip": "C:\\Users\\Gamma_MRI\\source\\repos\\GAMMAFieldMap\\FieldMapGUI\\GAMMA-GUI\\Form1.cs [Design]",
-              "RelativeToolTip": "..\\..\\..\\..\\source\\repos\\GAMMAFieldMap\\FieldMapGUI\\GAMMA-GUI\\Form1.cs [Design]",
+              "ToolTip": "C:\\Users\\Gamma_MRI\\Documents\\GitHub\\FieldMapGUI\\FieldMapGUI\\GAMMA-GUI\\Form1.cs [Design]",
+              "RelativeToolTip": "GAMMA-GUI\\Form1.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-04T12:36:49.117Z"
+              "WhenOpened": "2024-10-04T12:36:49.117Z",
+              "EditorCaption": " [Design]"
             }
           ]
         }

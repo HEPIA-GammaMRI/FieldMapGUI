@@ -1,24 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO.Ports;
 using System.IO;
+using System.IO.Ports;
 using System.Threading;
-
 
 namespace FieldMapGUI
 {
-
     partial class TeslameterF71Comms
     {
-        string sendString;
-        string commandString;
+        // Command-related fields
+        private string sendString;
+        private string commandString;
 
+        // Public data fields
         public bool ReadbacksAvailable;
-
-        public string replyFromUnit;
+        public string ReplyFromUnit;
 
         public double UnitFieldMagnitude;
         public double UnitFieldX;
@@ -26,366 +21,277 @@ namespace FieldMapGUI
         public double UnitFieldZ;
         public double UnitFieldTemp;
         public int UnitAveragingWindow;
-        public int UnitProbeTempCOmpEnabled;
+        public int UnitProbeTempCompEnabled;
         public int UnitFilterEnabled;
 
-        public String UnitSensorMode,  UnitFilterType, UnitProbeSerial, UnitProbeCalDate, UnitProbeModel, UnitProbeOrientation, UnitProbeType,  UnitUnits;
+        public string UnitSensorMode;
+        public string UnitFilterType;
+        public string UnitProbeSerial;
+        public string UnitProbeCalDate;
+        public string UnitProbeModel;
+        public string UnitProbeOrientation;
+        public string UnitProbeType;
+        public string UnitUnits;
 
+        // Serial port and communication flags
         private SerialPort m_ioSPIO;
         private bool m_bOnline = false;
         private bool m_bConnected;
 
-
+        // Thread and synchronization
         private Thread m_thIOThread;
+        public static readonly object m_oIOLock = new object();
 
-        public static Object m_oIOLock = new Object();
-
-
-        private string m_sLogDirectory;
-        private string m_sLogFilePath;
+        // Logging and configuration
+        private readonly string m_sLogDirectory;
+        private readonly string m_sLogFilePath;
         private const string LOG_FOLDER = "\\Log";
         private bool m_bLogToDebugFile;
         private bool m_bDataDumpToFile;
         private int m_iDataDumpFrequencyMS;
         private DateTime m_dtLastDataDump;
-        private bool m_ContinueMonitoring;
+   
 
+        // Constructor
         public TeslameterF71Comms()
         {
-            string sUserProfilePATH = Environment.GetEnvironmentVariable("USERPROFILE");
-            m_sLogDirectory = sUserProfilePATH + "\\My Documents\\FieldMapGUI\\Teslameter" + LOG_FOLDER + "\\";
-            m_sLogFilePath = m_sLogDirectory + "Teslameter-IO.txt";
+            string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
+            m_sLogDirectory = Path.Combine(userProfilePath, "My Documents", "FieldMapGUI", "Teslameter", LOG_FOLDER);
+            m_sLogFilePath = Path.Combine(m_sLogDirectory, "Teslameter-IO.txt");
+
             LogIOToFile = false;
-            LogFrequencyMS = 10000; // log every 10s
+            LogFrequencyMS = 10000; // Log every 10 seconds
             m_dtLastDataDump = DateTime.Now;
             DumpPropertiesToFile = false;
         }
 
+        // Initialization
         public void Init()
         {
             ReadbacksAvailable = false;
-
             commandString = "";
+            m_thIOThread = new Thread(MainIOThread) { Name = "Teslameter_IOThread" };
 
-
-
-           
-
-        m_thIOThread = new Thread(MainIOThread);
-            m_thIOThread.Name = "Teslameter_IOThread";
-
-            int TeslameterStatus = 0;
             m_bOnline = false;
             m_bConnected = false;
 
-            string[] ports = SerialPort.GetPortNames();
-
-            foreach (string port in ports)
+            // Try connecting to available serial ports
+            foreach (string port in SerialPort.GetPortNames())
             {
                 if (port.Contains("/dev/cu.usbmodem") || port.Contains("/dev/tty.usbmodem") || port.Contains("COM"))
                 {
-                    m_ioSPIO = new SerialPort(port, 115200);
-
-                    if (!m_ioSPIO.IsOpen)
+                    m_ioSPIO = new SerialPort(port, 115200)
                     {
-                        try
-                        {
-                            m_ioSPIO.NewLine = "\r\n";
-                            //m_ioSPIO.DtrEnable = true;
-                            m_ioSPIO.RtsEnable = true;
-                            //m_ioSPIO.Handshake = Handshake.RequestToSend;
-                            m_ioSPIO.WriteTimeout = 500;
-                            m_ioSPIO.ReadTimeout = 500;
-                            m_ioSPIO.ReadBufferSize = 4096;
-                            m_ioSPIO.WriteBufferSize = 4096;
-                            m_ioSPIO.Open();
+                        NewLine = "\r\n",
+                        RtsEnable = true,
+                        WriteTimeout = 500,
+                        ReadTimeout = 500,
+                        ReadBufferSize = 4096,
+                        WriteBufferSize = 4096
+                    };
 
-
-                            TeslameterStatus = TeslameterUnitPresent();
-                            if (TeslameterStatus == 1)
-                            {
-                                LogError("Teslameter IO - Initialised()");
-                                m_bOnline = (TeslameterStatus == 1);
-                                Connected = m_bOnline;
-                                break;
-                            }
-                            else
-                            {
-                                m_ioSPIO.Close();
-                                LogError("Teslameter IO - Failed to Init()");
-                                m_bOnline = false;
-                                TeslameterStatus = 0;
-                            }
-                        }
-                        catch (Exception ex)
+                    try
+                    {
+                        m_ioSPIO.Open();
+                        if (TeslameterUnitPresent() == 1)
                         {
-                            Console.WriteLine(ex);
+                            LogError("Teslameter IO - Initialized");
+                            m_bOnline = true;
+                            Connected = true;
+                            break;
                         }
+                        else
+                        {
+                            m_ioSPIO.Close();
+                            LogError("Teslameter IO - Initialization Failed");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error during initialization: {ex.Message}");
                     }
                 }
             }
+
+            // Start the IO thread if connected
             if (Connected)
             {
                 StartIOThread();
             }
-            //return TeslameterStatus;
         }
 
+        // Check if the Teslameter unit is present
         private int TeslameterUnitPresent()
         {
-            int temp = 0;
-            m_bOnline = true; // COMMS are possible via SerialPort 
-            string rv = SendToUnit("*:PROB:MOD?;:PROB:SNUM?;:PROB:CALD?;:PROB:SOR?;:PROB:STYP?;");
-            if (rv != null)
-            {
-                if (rv.Contains("FP-2X-250-ZS30M-15"))  
-                {
-                    LogError("TeslameterF71 Unit Found!");
+            m_bOnline = true; // Assume comms are possible
+            string response = SendToUnit("*:PROB:MOD?;:PROB:SNUM?;:PROB:CALD?;:PROB:SOR?;:PROB:STYP?;");
 
-                    String[] readbacks = rv.Split(';');
-                    UnitProbeModel = readbacks[0];
-                    UnitProbeSerial = readbacks[1];
-                    UnitProbeCalDate = readbacks[2];
-                    UnitProbeOrientation = readbacks[3];
-                    UnitProbeType = readbacks[4];
-                    temp = 1;
-                }
-                else
-                {
-                    LogError(">>>>> It's all gone a bit Pete Tong!");
-                    temp = 0;
-                }
+            if (!string.IsNullOrEmpty(response) && response.Contains("FP-2X-250-ZS30M-15"))
+            {
+                LogError("TeslameterF71 Unit Found!");
+                string[] readbacks = response.Split(';');
+                UnitProbeModel = readbacks[0];
+                UnitProbeSerial = readbacks[1];
+                UnitProbeCalDate = readbacks[2];
+                UnitProbeOrientation = readbacks[3];
+                UnitProbeType = readbacks[4];
+                return 1;
             }
-            return temp;
+
+            LogError("Teslameter Unit Not Found");
+            return 0;
         }
 
-        private string SendToUnit(string sCmd)
+        // Send a command to the Teslameter unit
+        private string SendToUnit(string command)
         {
-            string rv;
-           
-            rv = "";
-            
-
-            
-
             try
             {
-
                 m_ioSPIO.DiscardInBuffer();
                 m_ioSPIO.DiscardOutBuffer();
 
-                m_ioSPIO.WriteLine(sCmd);
-                
+                m_ioSPIO.WriteLine(command);
                 Thread.Sleep(200);
-                rv = m_ioSPIO.ReadLine();
-
-             
-
-
-
-
+                string response = m_ioSPIO.ReadLine();
+                SaveToDebugFile(command);
                 Connected = true;
-                //Console.WriteLine("Reply: " + rv);
+
+                return response;
             }
             catch (Exception ex)
             {
-               // Console.WriteLine("SendToUnit(): IO Status = {0}", ex.Message);
-      
+                Console.WriteLine($"Error sending command: {ex.Message}");
+                return null;
             }
-            SaveToDebugFile(sCmd);
-            //  Console.WriteLine("SendToUnit(): {0}", sCmd);
-            
-            return rv;
         }
 
+        // Start the IO thread
         public void StartIOThread()
         {
-            if (m_thIOThread.IsAlive == false)
+            if (!m_thIOThread.IsAlive)
             {
-                Console.WriteLine("RC_IO: Starting IOThread");
+                Console.WriteLine("Starting IOThread");
                 m_thIOThread.Start();
             }
         }
 
+        // Shutdown and cleanup
         public void Closedown()
         {
-            m_ContinueMonitoring = false; // Signal to IOThread() that it should terminate
+         
+
             if (m_thIOThread.IsAlive)
             {
                 m_thIOThread.Join(2000);
             }
+
             m_bOnline = false;
             m_ioSPIO.Close();
             m_bConnected = false;
-        }//Closedown()
-
-        private void LogError(string sError)
-
-        {
-            Console.WriteLine("RC_IO - " + sError);
-            SaveToDebugFile(sError);
         }
 
-        public bool Connected
-        {
-            set
-            {
-                if (m_bConnected == value)
-                {
-                    return;
-                }
-                m_bConnected = value;
-            }
-            get { return m_bConnected; }
-        }
-
+        // Main IO thread logic
         private void MainIOThread()
         {
             while (m_bOnline)
             {
-                //m_ioSPIO.DiscardOutBuffer();
-                //m_ioSPIO.DiscardInBuffer();
-                //m_ioSPIO.WriteTimeout = 500;
-                //m_ioSPIO.ReadTimeout = 500;
-                //ReadbacksAvailable = false;
                 lock (m_oIOLock)
-
                 {
-
-                    if (commandString != "")
+                    if (!string.IsNullOrEmpty(commandString))
                     {
-                        Console.WriteLine(commandString);
+                        Console.WriteLine($"Queued Command: {commandString}");
                     }
-                    sendString = "FETC:DC? ;*FETC:DC? X;*FETC:DC? Y;*FETC:DC? Z;*FETC:TEMP?;:SENS:MODE?;:SENS:AVER:COUN?;:SENS:FILT:STAT?;:SENS:FILT:TYPE?;:UNIT?;:PROB:TCOM?" + commandString + ";:*OPC;";//;:*CLS;:*RST
-                    //
-                    commandString = "";
+
+                    sendString = $"FETC:DC?;*FETC:DC? X;*FETC:DC? Y;*FETC:DC? Z;*FETC:TEMP?;:SENS:MODE?;:SENS:AVER:COUN?;:SENS:FILT:STAT?;:SENS:FILT:TYPE?;:UNIT?;:PROB:TCOM?{commandString};:*OPC;";
+                    commandString = ""; // Reset command queue
                 }
-                replyFromUnit = SendToUnit(sendString); 
-                //Console.WriteLine(replyFromUnit);
-                String[] readbacks = replyFromUnit.Split(';');
-                Thread.Sleep(50);
-               
 
-                double tempVar, tempVarM, tempVarX, tempVarY, tempVarZ;
-                
-                
-                try
+                // Process response
+                ReplyFromUnit = SendToUnit(sendString);
+                string[] readbacks = ReplyFromUnit?.Split(';');
+
+                if (readbacks?.Length == 11 && readbacks[9] == "TESLA")
                 {
-                   
-                    
-                  
-
-                    tempVarM = double.Parse(readbacks[0]);
-                    tempVarX = double.Parse(readbacks[1]);
-                    tempVarY = double.Parse(readbacks[2]);
-                    tempVarZ = double.Parse(readbacks[3]);
-
-
-                    tempVar = 0;
-
-                    if (Math.Round(tempVarM,4) != Math.Round(Math.Sqrt(tempVarX* tempVarX + tempVarY*tempVarY + tempVarZ* tempVarZ),4)) 
-                    { 
-                        tempVar = 1; 
-                    }
-
-                    
-                    if (readbacks.Length != 11)
+                    try
                     {
-                        tempVar = 1;
+                        // Parse readbacks
+                        UnitFieldMagnitude = double.Parse(readbacks[0]);
+                        UnitFieldX = -double.Parse(readbacks[2]);
+                        UnitFieldY = -double.Parse(readbacks[3]);
+                        UnitFieldZ = -double.Parse(readbacks[1]);
+                        UnitFieldTemp = double.Parse(readbacks[4]);
+                        UnitSensorMode = readbacks[5];
+                        UnitAveragingWindow = int.Parse(readbacks[6]);
+                        UnitFilterEnabled = int.Parse(readbacks[7]);
+                        UnitFilterType = readbacks[8];
+                        UnitProbeTempCompEnabled = int.Parse(readbacks[10]);
+                        UnitUnits = readbacks[9];
+                        ReadbacksAvailable = true;
                     }
-                    if (readbacks[9] != "TESLA")
+                    catch
                     {
-                        tempVar = 1;
+                        LogError("Error parsing response from unit.");
                     }
-
-
-
-
                 }
-                catch
-                {
-                    tempVar = 1;
-                }
-
-
-                if (tempVar == 0)
-                {
-                    UnitFieldMagnitude = double.Parse(readbacks[0]);
-                    UnitFieldX = -double.Parse(readbacks[2]);
-                    UnitFieldY = -double.Parse(readbacks[3]);
-                    UnitFieldZ = -double.Parse(readbacks[1]);
-                    UnitFieldTemp = double.Parse(readbacks[4]);
-
-                    UnitSensorMode = readbacks[5];
-                    UnitAveragingWindow = int.Parse(readbacks[6]);
-                    UnitFilterEnabled = int.Parse(readbacks[7]);
-                    UnitFilterType = readbacks[8];
-                    
-                    UnitProbeTempCOmpEnabled = int.Parse(readbacks[10]);
-                    UnitUnits = readbacks[9];
-                    ReadbacksAvailable = true;
-                }
-
-
-
-
-
-                
-
-
-
-
-
-
-
             }
+        }
 
-
-        }//IOThread()
-
-        public void QueueCommand(string sCommand)
+        // Queue a command for execution
+        public void QueueCommand(string command)
         {
             lock (m_oIOLock)
             {
-                commandString = commandString + ";" + sCommand;
+                commandString += ";" + command;
             }
+        }
 
-        }//SendDGCommand()
+        // Error logging
+        private void LogError(string error)
+        {
+            Console.WriteLine($"Error: {error}");
+            SaveToDebugFile(error);
+        }
+
+        // Save debug information to a file
+        private void SaveToDebugFile(string text)
+        {
+            if (!m_bLogToDebugFile) return;
+
+            try
+            {
+                Directory.CreateDirectory(m_sLogDirectory);
+                StreamWriter file = new StreamWriter(Path.Combine(m_sLogDirectory, "RC-IO.txt"), true);
+                file.WriteLine($"{DateTime.Now}: {text}");
+            }
+            catch
+            {
+                Console.WriteLine("Failed to save debug file.");
+            }
+        }
+
+        // Properties
+        public bool Connected
+        {
+            get => m_bConnected;
+            set => m_bConnected = value;
+        }
 
         public bool LogIOToFile
         {
-            set { m_bLogToDebugFile = value; }
-            get { return m_bLogToDebugFile; }
-        }
-
-        private void SaveToDebugFile(string sText)
-        {
-            if (!m_bLogToDebugFile)
-            {
-                return;
-            }
-            try
-            {
-                StreamWriter file = new System.IO.StreamWriter(m_sLogDirectory + "RC-IO.txt", true); // Append if present, create if not
-                file.WriteLine(string.Format("{0} : {1}", DateTime.Now, sText));
-                file.Close();
-            }
-            catch { } // ## TODO - report fault on saving to file!
+            get => m_bLogToDebugFile;
+            set => m_bLogToDebugFile = value;
         }
 
         public bool DumpPropertiesToFile
         {
-            set { m_bDataDumpToFile = value; }
-            get { return m_bDataDumpToFile; }
+            get => m_bDataDumpToFile;
+            set => m_bDataDumpToFile = value;
         }
 
         public int LogFrequencyMS
         {
-            set { m_iDataDumpFrequencyMS = value; }
-            get { return m_iDataDumpFrequencyMS; }
+            get => m_iDataDumpFrequencyMS;
+            set => m_iDataDumpFrequencyMS = value;
         }
-
     }
-
-
 }

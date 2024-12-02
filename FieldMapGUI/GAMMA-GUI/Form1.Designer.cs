@@ -130,7 +130,7 @@
             // timerCubeMeasure
             // 
             this.timerCubeMeasure.Interval = 20;
-            this.timerCubeMeasure.Tick += new System.EventHandler(this.timerUI_Tick);
+            this.timerCubeMeasure.Tick += new System.EventHandler(this.TimerUI_Tick);
             // 
             // panelField
             // 
